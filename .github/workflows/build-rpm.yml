@@ -1,0 +1,63 @@
+name: Build RPM (ALT)
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      alt_image:
+        description: "ALT container image"
+        required: false
+        default: "registry.altlinux.org/alt/alt:p11"
+
+env:
+  ALT_IMAGE: ${{ github.event.inputs.alt_image || 'registry.altlinux.org/alt/alt:p11' }}
+
+jobs:
+  rpm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show ALT image
+        run: echo "Using container $ALT_IMAGE"
+
+      - name: Install build tools in ALT container
+        run: |
+          docker run --rm -v "$PWD:/work" -w /work "$ALT_IMAGE" bash -euxo pipefail -c '
+            apt-get update
+            apt-get install -y \
+              rpm-build cmake gcc-c++ make pkg-config git curl \
+              libharfbuzz-devel libpng-devel libcairo-devel librsvg-devel \
+              libjpeg-turbo-devel libtiff-devel libxml2-devel zlib-devel \
+              qt5-base-devel desktop-file-utils
+          '
+
+      - name: Fetch sources
+        run: |
+          set -eux
+          ver="$(grep -m1 '^Version:' fontmaster.spec | awk '{print $2}')"
+          mkdir -p rpmbuild/SOURCES rpmbuild/SPECS
+          curl -fL --retry 3 -o "rpmbuild/SOURCES/fontmaster-${ver}.tar.gz" \
+            "https://github.com/NICourced/fontmaster/archive/refs/tags/${ver}.tar.gz"
+          cp fontmaster.spec rpmbuild/SPECS/
+          ls -l rpmbuild/SOURCES
+
+      - name: Build RPM and SRPM
+        run: |
+          docker run --rm -v "$PWD:/work" -w /work "$ALT_IMAGE" bash -euxo pipefail -c '
+            rpmbuild --define "_topdir /work/rpmbuild" -ba /work/rpmbuild/SPECS/fontmaster.spec
+          '
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fontmaster-rpms
+          path: |
+            rpmbuild/RPMS/**/*.rpm
+            rpmbuild/SRPMS/*.rpm
+            rpmbuild/BUILD/*.log
+          if-no-files-found: warn
