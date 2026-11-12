@@ -3,6 +3,7 @@ name: Build RPM (ALT)
 on:
   push:
     branches: [master, main]
+    tags: ['fontmaster-*']
   pull_request:
   workflow_dispatch:
     inputs:
@@ -68,3 +69,38 @@ jobs:
             rpmbuild/BUILD/*.log
             dist/*
           if-no-files-found: warn
+
+  release:
+    name: Publish release
+    needs: rpm
+    if: startsWith(github.ref, 'refs/tags/fontmaster-')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download packages
+        uses: actions/download-artifact@v4
+        with:
+          name: fontmaster-packages
+          path: dist
+
+      - name: Create or update release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -eux
+          ver="${TAG#fontmaster-}"
+          files=()
+          while IFS= read -r -d '' f; do files+=("$f"); done < <(
+            find dist -type f \( -name '*.rpm' -o -name '*.AppImage' \
+              -o -name '*.tar.gz' -o -name 'SHA256SUMS' \) -print0
+          )
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "${files[@]}" --clobber
+          else
+            gh release create "$TAG" "${files[@]}" --verify-tag \
+              --title "FontMaster ${ver} (ALT)" \
+              --notes "ALT Linux packages for FontMaster ${ver}: SRPM, RPM and subpackages, plus the upstream AppImage and portable archive."
+          fi
