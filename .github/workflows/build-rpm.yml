@@ -24,17 +24,6 @@ jobs:
       - name: Show ALT image
         run: echo "Using container $ALT_IMAGE"
 
-      - name: Install build tools in ALT container
-        run: |
-          docker run --rm -v "$PWD:/work" -w /work "$ALT_IMAGE" bash -euxo pipefail -c '
-            apt-get update
-            apt-get install -y \
-              rpm-build cmake gcc-c++ make pkg-config git curl \
-              libharfbuzz-devel libpng-devel libcairo-devel librsvg-devel \
-              libjpeg-devel libtiff-devel libxml2-devel zlib-devel \
-              qt5-base-devel desktop-file-utils
-          '
-
       - name: Fetch sources
         run: |
           set -eux
@@ -48,6 +37,12 @@ jobs:
       - name: Build RPM and SRPM
         run: |
           docker run --rm -v "$PWD:/work" -w /work "$ALT_IMAGE" bash -euxo pipefail -c '
+            apt-get update
+            apt-get install -y \
+              rpm-build cmake gcc-c++ make pkg-config git curl \
+              libharfbuzz-devel libpng-devel libcairo-devel librsvg-devel \
+              libjpeg-devel libtiff-devel libxml2-devel zlib-devel \
+              qt5-base-devel desktop-file-utils
             rpmbuild --define "_topdir /work/rpmbuild" -ba /work/rpmbuild/SPECS/fontmaster.spec
           '
 
