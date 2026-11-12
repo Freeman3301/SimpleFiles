@@ -29,7 +29,8 @@ jobs:
           set -eux
           ver="$(grep -m1 '^Version:' fontmaster.spec | awk '{print $2}')"
           mkdir -p rpmbuild/SOURCES rpmbuild/SPECS
-          curl -fL --retry 3 -o "rpmbuild/SOURCES/fontmaster-${ver}.tar.gz" \
+          # rpmbuild looks for the basename of Source0, i.e. <version>.tar.gz
+          curl -fL --retry 3 -o "rpmbuild/SOURCES/${ver}.tar.gz" \
             "https://github.com/NICourced/fontmaster/archive/refs/tags/${ver}.tar.gz"
           cp fontmaster.spec rpmbuild/SPECS/
           ls -l rpmbuild/SOURCES

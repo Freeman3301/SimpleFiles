@@ -35,7 +35,8 @@ Push to the repository (or run the workflow manually) — CI builds in
 ```sh
 rpmdev-setuptree
 ver=$(rpmspec -q --qf '%{version}' fontmaster.spec | head -1)
-curl -fL -o ~/rpmbuild/SOURCES/fontmaster-$ver.tar.gz \
+# rpmbuild expects the basename of Source0: <version>.tar.gz
+curl -fL -o ~/rpmbuild/SOURCES/$ver.tar.gz \
   https://github.com/NICourced/fontmaster/archive/refs/tags/$ver.tar.gz
 rpmbuild -ba fontmaster.spec
 ```
