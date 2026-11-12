@@ -28,7 +28,7 @@ in Termux. Use one of:
 ### GitHub Actions
 
 Push to the repository (or run the workflow manually) — CI builds in
-`registry.altlinux.org/alt/alt:p11` and uploads `*.rpm` / `*.src.rpm`.
+`registry.altlinux.org/alt/alt:sisyphus` and uploads `*.rpm` / `*.src.rpm`.
 
 ### Local, on ALT Linux
 
@@ -48,9 +48,10 @@ gear -b
 
 ## Notes
 
-- Upstream requires HarfBuzz >= 15.1, librsvg >= 2.46, libjpeg-turbo >= 3.0
-  and libtiff >= 4.5. Check the versions available in `p10` before targeting
-  that branch; `sisyphus` and `p11` are the intended targets.
+- Upstream requires HarfBuzz >= 15.1. `p11` ships 12.1.0, so the package can
+  only be built against **Sisyphus** (harfbuzz 15.1.0). `p10` is older still.
+- libjpeg-turbo in ALT is packaged as `libjpeg` / `libjpeg-devel` (it offers
+  the turbo API and `libturbojpeg.pc`); there is no `libjpeg-turbo-devel`.
 - The Qt GUI uses Qt 5 (`qt5-base-devel`), not Qt 6.
 - Upstream CMake does not install the `.desktop` file or icon; the spec
   installs them explicitly.

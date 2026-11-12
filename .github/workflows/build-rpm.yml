@@ -9,10 +9,10 @@ on:
       alt_image:
         description: "ALT container image"
         required: false
-        default: "registry.altlinux.org/alt/alt:p11"
+        default: "registry.altlinux.org/alt/alt:sisyphus"
 
 env:
-  ALT_IMAGE: ${{ github.event.inputs.alt_image || 'registry.altlinux.org/alt/alt:p11' }}
+  ALT_IMAGE: ${{ github.event.inputs.alt_image || 'registry.altlinux.org/alt/alt:sisyphus' }}
 
 jobs:
   rpm:
@@ -31,7 +31,7 @@ jobs:
             apt-get install -y \
               rpm-build cmake gcc-c++ make pkg-config git curl \
               libharfbuzz-devel libpng-devel libcairo-devel librsvg-devel \
-              libjpeg-turbo-devel libtiff-devel libxml2-devel zlib-devel \
+              libjpeg-devel libtiff-devel libxml2-devel zlib-devel \
               qt5-base-devel desktop-file-utils
           '
 

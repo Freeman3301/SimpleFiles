@@ -20,7 +20,7 @@ BuildRequires: libharfbuzz-devel >= 15.1
 BuildRequires: libpng-devel
 BuildRequires: libcairo-devel
 BuildRequires: librsvg-devel >= 2.46
-BuildRequires: libjpeg-turbo-devel >= 3.0
+BuildRequires: libjpeg-devel >= 3.0
 BuildRequires: libtiff-devel >= 4.5
 BuildRequires: libxml2-devel
 BuildRequires: zlib-devel
