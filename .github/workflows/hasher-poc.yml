@@ -1,0 +1,43 @@
+name: hasher PoC
+
+# Experiment only: builds the package with hasher/gear-hsh inside a
+# privileged ALT container. Not part of the normal package pipeline.
+on:
+  workflow_dispatch:
+
+jobs:
+  hasher:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch upstream source
+        run: |
+          set -eux
+          ver="$(grep -m1 '^Version:' fontmaster.spec | awk '{print $2}')"
+          curl -fL --retry 3 -o src.tar.gz \
+            "https://github.com/NICourced/fontmaster/archive/refs/tags/${ver}.tar.gz"
+          ls -l src.tar.gz
+
+      - name: Run hasher in privileged ALT container
+        run: |
+          docker run --rm --privileged \
+            -v "$PWD:/work" -w /work \
+            registry.altlinux.org/alt/alt:sisyphus \
+            bash /work/ci/hasher-poc.sh
+
+      - name: Show hasher log
+        if: always()
+        run: tail -80 hasher.log || true
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hasher-poc
+          path: |
+            hasher.log
+            hasher-repo/*
+          if-no-files-found: warn
