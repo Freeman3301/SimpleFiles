@@ -35,6 +35,23 @@ jobs:
           cp fontmaster.spec rpmbuild/SPECS/
           ls -l rpmbuild/SOURCES
 
+      - name: Fetch upstream AppImage and portable archive
+        run: |
+          set -eux
+          ver="$(grep -m1 '^Version:' fontmaster.spec | awk '{print $2}')"
+          base="https://github.com/NICourced/fontmaster/releases/download/${ver}"
+          mkdir -p dist
+          if curl -fL --retry 3 -o "dist/FontMaster-${ver}-linux-x86_64.AppImage" \
+                 "${base}/FontMaster-${ver}-linux-x86_64.AppImage"; then
+            curl -fL --retry 3 -o "dist/FontMaster-${ver}-linux-x86_64.tar.gz" \
+                 "${base}/FontMaster-${ver}-linux-x86_64.tar.gz"
+            curl -fL --retry 3 -o "dist/SHA256SUMS" "${base}/SHA256SUMS"
+            (cd dist && sha256sum --check SHA256SUMS)
+          else
+            echo "No upstream AppImage published for ${ver}; skipping" >&2
+            rm -f "dist/FontMaster-${ver}-linux-x86_64.AppImage"
+          fi
+
       - name: Build RPM and SRPM
         run: |
           docker run --rm -v "$PWD:/work" -w /work "$ALT_IMAGE" \
@@ -44,9 +61,10 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: fontmaster-rpms
+          name: fontmaster-packages
           path: |
             rpmbuild/RPMS/**/*.rpm
             rpmbuild/SRPMS/*.rpm
             rpmbuild/BUILD/*.log
+            dist/*
           if-no-files-found: warn

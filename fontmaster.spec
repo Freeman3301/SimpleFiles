@@ -99,5 +99,5 @@ desktop-file-validate %buildroot%_desktopdir/fontmaster.desktop || true
 %_libdir/cmake/fontmaster/
 
 %changelog
-* Wed Nov 12 2026 Freeman3301 <freeman3301@users.noreply.github.com> 0.0.2-alt1
+* Thu Nov 12 2026 Freeman3301 <freeman3301@users.noreply.github.com> 0.0.2-alt1
 - Initial ALT build of FontMaster 0.0.2.
